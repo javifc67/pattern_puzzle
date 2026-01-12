@@ -123,7 +123,7 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
     setIsDrawing(false);
     if (pattern.length > 0) {
       if (solvePuzzle && !solved) {
-        const solutionString = pattern.map(i => i + 1).join('');
+        const solutionString = pattern.map(i => i + 1).join(';');
         solvePuzzle(solutionString);
       }
     }
