@@ -4,15 +4,13 @@ div.mainScreen {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100vh; // Full viewport height
-  background-color: #000; // Black background as per image
+  height: 100vh;
   color: white;
 
   .pattern-container {
     position: relative;
-    width: 300px;
-    height: 300px;
-    // touch-action: none is critical for touch dragging to work without scrolling
+    width: 500px;
+    height: 500px;
     touch-action: none;
 
     .dots-grid {
@@ -21,7 +19,7 @@ div.mainScreen {
       grid-template-rows: repeat(3, 1fr);
       width: 100%;
       height: 100%;
-      pointer-events: none; // Let events pass through to container for smoother dragging
+      pointer-events: none;
     }
 
     .dot-wrapper {
@@ -32,7 +30,7 @@ div.mainScreen {
       .dot {
         width: 16px;
         height: 16px;
-        background-color: #9aca3c; // Green color from image
+        background-color: #9aca3c;
         border-radius: 50%;
         transition: transform 0.2s ease, background-color 0.2s;
         box-shadow: 0 0 5px rgba(154, 202, 60, 0.5);
@@ -74,5 +72,34 @@ div.mainScreen {
     font-size: 1.5rem;
     color: #9aca3c;
     font-family: sans-serif;
+  }
+
+  @keyframes shake {
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    25% {
+      transform: translateX(-10px);
+    }
+
+    75% {
+      transform: translateX(10px);
+    }
+  }
+
+  .pattern-container.error {
+    animation: shake 0.4s ease-in-out;
+
+    .dot-wrapper.active .dot {
+      background-color: #ff4444;
+      box-shadow: 0 0 15px rgba(255, 68, 68, 0.8);
+    }
+
+    .pattern-lines .line {
+      stroke: #ff4444;
+    }
   }
 }

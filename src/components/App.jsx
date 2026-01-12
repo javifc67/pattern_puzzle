@@ -3,10 +3,8 @@ import "./../assets/scss/app.scss";
 
 import {
   DEFAULT_APP_SETTINGS,
-  END_SCREEN,
   ESCAPP_CLIENT_SETTINGS,
   MAIN_SCREEN,
-  THEME_ASSETS,
 } from "../constants/constants.jsx";
 import { GlobalContext } from "./GlobalContext.jsx";
 import MainScreen from "./MainScreen.jsx";
@@ -23,19 +21,13 @@ export default function App() {
   const [solvedTrigger, setSolvedTrigger] = useState(0);
 
   useEffect(() => {
-    //Init Escapp client
     if (escapp !== null) {
       return;
     }
-    //Create the Escapp client instance.
     let _escapp = new ESCAPP(ESCAPP_CLIENT_SETTINGS);
     setEscapp(_escapp);
     Utils.log("Escapp client initiated with settings:", _escapp.getSettings());
-
-    //Use the storage feature provided by Escapp client.
     setStorage(_escapp.getStorage());
-
-    //Get app settings provided by the Escapp server.
     let _appSettings = processAppSettings(_escapp.getAppSettings());
     setAppSettings(_appSettings);
   }, []);
@@ -44,7 +36,6 @@ export default function App() {
     if (!hasExecutedEscappValidation.current && escapp !== null && appSettings !== null && Storage !== null) {
       hasExecutedEscappValidation.current = true;
 
-      //Register callbacks in Escapp client and validate user.
       escapp.registerCallback("onNewErStateCallback", function (erState) {
         try {
           Utils.log("New escape room state received from ESCAPP", erState);
@@ -65,7 +56,6 @@ export default function App() {
         }
       });
 
-      //Validate user. To be valid, a user must be authenticated and a participant of the escape room.
       escapp.validate((success, erState) => {
         try {
           Utils.log("ESCAPP validation", success, erState);
@@ -100,7 +90,6 @@ export default function App() {
       });
     }
 
-    // Si el puzle está resuelto lo ponemos en posicion de resuelto
     if (escapp.getAllPuzzlesSolved() && escapp.getLastSolution()) {
       if (appSettings.actionWhenLoadingIfSolved) {
         setSolved(true);
@@ -116,27 +105,20 @@ export default function App() {
       _appSettings.skin = DEFAULT_APP_SETTINGS.skin;
     }
 
-    let skinSettings = THEME_ASSETS[_appSettings.skin] || {};
+    _appSettings = Utils.deepMerge(DEFAULT_APP_SETTINGS, _appSettings);
 
-    let DEFAULT_APP_SETTINGS_SKIN = Utils.deepMerge(DEFAULT_APP_SETTINGS, skinSettings);
-
-    // Merge _appSettings with DEFAULT_APP_SETTINGS_SKIN to obtain final app settings
-    _appSettings = Utils.deepMerge(DEFAULT_APP_SETTINGS_SKIN, _appSettings);
-
-    //Init internacionalization module
     I18n.init(_appSettings);
 
     if (typeof _appSettings.message !== "string") {
       _appSettings.message = I18n.getTrans("i.message");
     }
-
-    //Change HTTP protocol to HTTPs in URLs if necessary
+    if (typeof _appSettings.backgroundImg === "string" && _appSettings.backgroundImg.trim() !== "" && _appSettings.backgroundImg !== "NONE") {
+      _appSettings.background = "url(" + _appSettings.backgroundImg + ") no-repeat";
+      _appSettings.backgroundSize = "100% 100%";
+    }
     _appSettings = Utils.checkUrlProtocols(_appSettings);
 
-    //Preload resources (if necessary)
     Utils.preloadImages([_appSettings.backgroundMessage]);
-    //Utils.preloadAudios([_appSettings.soundBeep,_appSettings.soundNok,_appSettings.soundOk]); //Preload done through HTML audio tags
-    //Utils.preloadVideos(["videos/some_video.mp4"]);
     Utils.log("App settings:", _appSettings);
     return _appSettings;
   }
@@ -152,7 +134,6 @@ export default function App() {
       Utils.log("Check solution Escapp response", success, erState);
       if (success) {
         setSolved(true);
-        setScreen(END_SCREEN);
         try {
           setTimeout(() => {
             submitPuzzleSolution(_solution);
@@ -200,31 +181,23 @@ export default function App() {
           <MainScreen solvePuzzle={solvePuzzle} solved={solved} solvedTrigger={solvedTrigger} />
         </div>
       ),
-    },
-    {
-      id: END_SCREEN,
-      content: (
-        <video
-          src={appSettings?.endScreenVideo}
-          autoPlay
-          loop
-          muted
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-      ),
-    },
+    }
   ];
 
   return (
     <div
       id="global_wrapper"
-      className={`${
-        appSettings !== null && typeof appSettings.skin === "string" ? appSettings.skin.toLowerCase() : ""
-      }`}
+      className={`${appSettings !== null && typeof appSettings.skin === "string" ? appSettings.skin.toLowerCase() : ""
+        }`} {...(appSettings !== null &&
+          typeof appSettings.background === "string" &&
+          typeof appSettings.backgroundSize === "string"
+          ? {
+            style: {
+              background: appSettings.background,
+              backgroundSize: appSettings.backgroundSize,
+            },
+          }
+          : {})}
     >
       {renderScreens(screens)}
     </div>

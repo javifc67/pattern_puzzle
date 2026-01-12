@@ -1,17 +1,24 @@
 import "./../assets/scss/MainScreen.scss";
 import { useState, useRef, useEffect } from "react";
+import useSound from "../hooks/useSound";
+import { useContext } from "react";
+import { GlobalContext } from "./GlobalContext.jsx";
 
 const GRID_SIZE = 3;
 const DOT_RADIUS = 10;
 const HIT_AREA_RADIUS = 30;
 
 export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
+  const { I18n } = useContext(GlobalContext);
   const [pattern, setPattern] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [lines, setLines] = useState([]);
   const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
+  const [isError, setIsError] = useState(false);
   const containerRef = useRef(null);
   const dotsRef = useRef([]);
+  const errorSound = useSound("/sounds/wrong.wav");
+  const winSound = useSound("/sounds/win_sound.mp3");
 
   // Calculate lines between selected dots
   useEffect(() => {
@@ -30,6 +37,21 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
     }
     setLines(newLines);
   }, [pattern]);
+
+  useEffect(() => {
+    if (solvedTrigger > 0 && !solved) {
+      setIsError(true);
+      errorSound.play();
+      const timer = setTimeout(() => {
+        setIsError(false);
+        setPattern([]);
+        setLines([]);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (solvedTrigger > 0 && solved) {
+      winSound.play();
+    }
+  }, [solvedTrigger, solved]);
 
   const getDotCenter = (index) => {
     const dot = dotsRef.current[index];
@@ -64,6 +86,7 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
   };
 
   const handleStart = (e) => {
+    if (isError || solved) return;
     e.preventDefault(); // Prevent scroll
     setIsDrawing(true);
     setPattern([]);
@@ -80,7 +103,7 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
   };
 
   const handleMove = (e) => {
-    if (!isDrawing) return;
+    if (!isDrawing || isError || solved) return;
     e.preventDefault();
 
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -90,18 +113,18 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
 
     const index = getDotIndexFromPoint(clientX, clientY);
     if (index !== -1 && !pattern.includes(index)) {
-      // Check if we skipped a point in between (optional improvement, but good for simple version)
-      // For now, simpler direct connection logic
+
       setPattern((prev) => [...prev, index]);
     }
   };
 
   const handleEnd = () => {
+    if (isError || solved) return;
     setIsDrawing(false);
     if (pattern.length > 0) {
-      console.log("Pattern:", pattern);
       if (solvePuzzle && !solved) {
-        solvePuzzle(pattern);
+        const solutionString = pattern.map(i => i + 1).join('');
+        solvePuzzle(solutionString);
       }
     }
   };
@@ -118,12 +141,11 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
   return (
     <div className="mainScreen">
       <div
-        className="pattern-container"
+        className={`pattern-container ${isError ? 'error' : ''}`}
         ref={containerRef}
         onMouseDown={handleStart}
         onMouseMove={handleMove}
         onMouseUp={handleEnd}
-        onMouseLeave={handleEnd} // Stop if leaving area
         onTouchStart={handleStart}
         onTouchMove={handleMove}
         onTouchEnd={handleEnd}
@@ -166,7 +188,7 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
           })()}
         </svg>
       </div>
-      {solved && <div className="success-message">Unlocked!</div>}
+      {solved && <div className="success-message">{I18n.getTrans("i.unlocked")}</div>}
     </div>
   );
 }

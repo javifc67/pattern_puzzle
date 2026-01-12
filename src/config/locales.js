@@ -1,17 +1,11 @@
 export let LOCALES = {
   en: {
-    "i.pass": "I forgot my password",
-    "i.ok": "OK",
-    "i.wrongPass": "The password is incorrect. Please try again",
+    "i.unlocked": "Unlocked!",
   },
   es: {
-    "i.pass": "Olvidé mi contraseña",
-    "i.ok": "Aceptar",
-    "i.wrongPass": "La contraseña es incorrecta. Inténtelo de nuevo",
+    "i.unlocked": "¡Desbloqueado!",
   },
   sr: {
-    "i.pass": "I forgot my password",
-    "i.ok": "OK",
-    "i.wrongPass": "The password is incorrect. Please try again",
+    "i.unlocked": "Unlocked!",
   },
 };
