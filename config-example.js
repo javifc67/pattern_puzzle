@@ -6,6 +6,9 @@ export let ESCAPP_APP_SETTINGS = {
   backgroundImg: "NONE", //background can be "NONE" or a URL.
   backgroundColor: "transparent", //Only used if backgroundImg is NONE; can be NONE, a color or transparent
 
+  row: 4,
+  cols: 3,
+
   //Settings that will be automatically specified by the Escapp server
   locale: "es",
 

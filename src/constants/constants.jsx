@@ -1,6 +1,9 @@
 export const DEFAULT_APP_SETTINGS = {
-  backgroundImg: "NONE",
-  backgroundColor: "#2a2a52",
+  skin: "PHONE", //skin can be STANDARD or PHONE
+  backgroundImg: "NONE", //background can be "NONE" or a URL.
+  backgroundColor: "transparent", //Only used if backgroundImg is NONE; can be NONE, a color or transparent
+  row: 3,
+  cols: 3,
 };
 
 export const ESCAPP_CLIENT_SETTINGS = {

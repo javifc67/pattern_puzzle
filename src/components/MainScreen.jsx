@@ -8,7 +8,7 @@ import { THEMES } from "../constants/constants.jsx";
 const HIT_AREA_RADIUS = 30;
 
 export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
-  const { I18n, appSettings: skin } = useContext(GlobalContext);
+  const { I18n, appSettings: config } = useContext(GlobalContext);
   const [pattern, setPattern] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [lines, setLines] = useState([]);
@@ -18,6 +18,12 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
   const dotsRef = useRef([]);
   const errorSound = useSound("/sounds/wrong.wav");
   const winSound = useSound("/sounds/win_sound.mp3");
+
+  /* Using default 3 if not present. Note: user config uses 'row' (singular) and 'cols' (plural) */
+  const rows = config.row || 3;
+  const cols = config.cols || 3;
+  const totalDots = rows * cols;
+  const isPhone = config.skin === THEMES.PHONE;
 
   // Calculate lines between selected dots
   useEffect(() => {
@@ -71,7 +77,7 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
     const relX = x - containerRect.left;
     const relY = y - containerRect.top;
 
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < totalDots; i++) {
       const center = getDotCenter(i);
       if (!center) continue;
       const dist = Math.sqrt(
@@ -140,7 +146,7 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
   return (
     <div className="mainScreen">
       <div
-        style={{ backgroundImage: skin.skin === THEMES.PHONE ? `url(${skin.phoneImg})` : "none" }}
+        style={{ backgroundImage: "none" }}
         className={`pattern-container ${isError ? 'error' : ''}`}
         ref={containerRef}
         onMouseDown={handleStart}
@@ -150,8 +156,27 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
         onTouchMove={handleMove}
         onTouchEnd={handleEnd}
       >
-        {((skin.skin !== THEMES.PHONE) || (skin.skin === THEMES.PHONE && !solved)) && <><div className="dots-grid">
-          {[...Array(9)].map((_, i) => (
+        {/* Background Layers for Transition */}
+        {isPhone && (
+          <>
+            <div
+              className="bg-layer locked visible"
+              style={{ backgroundImage: `url(${config.phoneImg})` }}
+            />
+            <div
+              className={`bg-layer unlocked ${solved ? 'visible' : ''}`}
+              style={{ backgroundImage: `url(images/phone_unlocked.png)` }}
+            />
+          </>
+        )}
+        {(!isPhone || (isPhone && !solved)) && <><div
+          className="dots-grid"
+          style={{
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            gridTemplateRows: `repeat(${rows}, 1fr)`
+          }}
+        >
+          {[...Array(totalDots)].map((_, i) => (
             <div
               key={i}
               className={`dot-wrapper ${pattern.includes(i) ? 'active' : ''}`}
@@ -187,7 +212,7 @@ export default function MainScreen({ solvePuzzle, solved, solvedTrigger }) {
               );
             })()}
           </svg></>}
-        {solved && <div className="success-message">{I18n.getTrans("i.unlocked")}</div>}
+        {!isPhone && solved && <div className="success-message">{I18n.getTrans("i.unlocked")}</div>}
       </div>
     </div>
   );

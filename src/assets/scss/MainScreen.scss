@@ -115,13 +115,31 @@ div.mainScreen {
 
 #global_wrapper.phone {
   .pattern-container {
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
+    // Remove direct background styling as it's now handled by layers
+    background: none !important;
     height: 90%;
     width: auto;
     margin: auto;
     aspect-ratio: 9/19;
+
+
+    .bg-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      transition: opacity 0.8s ease-in-out;
+      z-index: -1;
+      opacity: 0;
+
+      &.visible {
+        opacity: 1;
+      }
+    }
 
     .dots-grid {
       width: 85%;
@@ -130,10 +148,12 @@ div.mainScreen {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      z-index: 2; // Ensure on top of background
     }
 
     .success-message {
       bottom: auto;
+      z-index: 3;
     }
   }
 }
